@@ -1,26 +1,35 @@
+
+import Adafruit_MCP3008 as MCP
+import send_mail
+
+CLK  = 18
+MISO = 23
+MOSI = 24
+CS   = 25
+mcp = MCP.MCP3008(clk=CLK, cs=CS, miso=MISO, mosi=MOSI)
+
 class Plant:
-    def __init__(self, name, water_level):
+    def __init__(self, name, recommended_moisture_level, current_moisture_level):
         self.name = name
-        self.water_level = water_level
+        self.recommended_moisture_level = recommended_moisture_level
+        self.current_moisture_level = current_moisture_level
     def summary(self):
-        print("Your " + self.name + " has a water level of " + str(self.water_level))  
+        return("Your " + self.name + " has a water level of " + str(self.current_moisture_level))  
 
 plant_ports = {
-    0: "Dill",
-    5: "Basil"
+    5: "Dill"
 }        
         
 
 def main():
     port_readings = {
-        0: .8,
         5: .2
     }
     plants =[] 
     for p in port_readings:
-        plant = Plant(plant_ports[p], port_readings[p])
+        plant = Plant(plant_ports[p], port_readings[p], mcp.read_adc(p))
         plants.append(plant)
     for p in plants:
-        p.summary()
+        send_mail.send_reading_mail(p.summary())
 
 main()
